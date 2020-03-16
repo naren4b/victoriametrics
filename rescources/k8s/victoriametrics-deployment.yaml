@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: victoriametrics
+  name: victoriametrics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: victoriametrics
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/vm_net: "true"
+        io.kompose.service: victoriametrics
+    spec:
+      containers:
+      - args:
+        - --storageDataPath=/storage
+        - --graphiteListenAddr=:2003
+        - --opentsdbListenAddr=:4242
+        - --httpListenAddr=:8428
+        image: victoriametrics/victoria-metrics
+        imagePullPolicy: ""
+        name: victoriametrics
+        ports:
+        - containerPort: 8428
+        - containerPort: 2003
+        - containerPort: 4242
+        resources: {}
+        volumeMounts:
+        - mountPath: /storage
+          name: vmdata
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+      - name: vmdata
+        persistentVolumeClaim:
+          claimName: vmdata
+status: {}
