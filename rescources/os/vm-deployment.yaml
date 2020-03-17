@@ -1,0 +1,40 @@
+---
+apiVersion: apps/v1
+
+kind: Deployment
+metadata: 
+  name: vm-deployment
+  labels:
+   app: vm-deployment
+
+spec:
+ replicas: 1
+ selector:
+  matchLabels:
+   app: victoria-metrics
+ template:
+  metadata:
+   labels:
+    app: victoria-metrics
+  spec:
+   containers:
+    - name: victoria
+      image: victoriametrics/victoria-metrics
+      args:
+      - --storageDataPath=/storage
+      - --graphiteListenAddr=:2003
+      - --opentsdbListenAddr=:4242
+      - --httpListenAddr=:8428
+      ports:
+      - containerPort: 8428
+      - containerPort: 2003
+      - containerPort: 4242
+      volumeMounts:
+      - mountPath: /storage
+        name: vmdata
+   volumes:
+    - name: vmdata
+      persistentVolumeClaim: 
+       claimName: vm-pvc
+ 
+     
